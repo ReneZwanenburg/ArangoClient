@@ -1,0 +1,12 @@
+{
+	"name": "arangoclient",
+	"authors": [
+		"Rene Zwanenburg"
+	],
+	"dependencies": {
+		"vibe-d": "~>0.7.30"
+	},
+	"description": "Low-level ArangoDB client for use with vibe.d",
+	"copyright": "Copyright © 2016, Rene",
+	"license": "Boost"
+}
