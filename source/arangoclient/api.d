@@ -13,8 +13,9 @@ interface AuthenticationAPI
 		bool must_change_password;
 	}
 	
+	@method(HTTPMethod.POST)
 	AuthenticationResponse
-	postAuth(string username, string password);
+	auth(string username, string password);
 }
 
 @path("_api")
@@ -35,13 +36,13 @@ interface DatabaseAPI
 	}
 	
 	Result!CurrentDatabase
-	getCurrent();
+	current();
 	
 	
 	alias Databases = string[];
 	
 	Result!Databases
-	getUser();
+	user();
 	
 	
 	Result!Databases
@@ -129,7 +130,7 @@ interface CollectionAPI
 	delete_(string _name, bool isSystem);
 	
 	
-	static struct TruncateResult
+	static struct CollectionInfo
 	{
 		string id;
 		string name;
@@ -142,7 +143,7 @@ interface CollectionAPI
 	
 	@path(":name/truncate")
 	@method(HTTPMethod.PUT)
-	TruncateResult
+	CollectionInfo
 	truncate(string _name);
 }
 
