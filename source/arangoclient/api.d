@@ -305,7 +305,7 @@ interface CollectionAPI
 	@path(":name/properties")
 	@method(HTTPMethod.PUT)
 	Properties
-	properties(string _name, bool waitForSync, ulong journalSize)
+	properties(string _name, bool waitForSync, ulong journalSize);
 	
 	@path(":oldName/rename")
 	@method(HTTPMethod.PUT)
