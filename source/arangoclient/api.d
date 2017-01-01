@@ -4,6 +4,9 @@ import vibe.web.rest;
 import vibe.data.json;
 import vibe.http.common : HTTPMethod;
 
+alias ArangoClient = RestInterfaceClient!API;
+alias ArangoAuthenticationClient = RestInterfaceClient!AuthenticationAPI;
+
 @path("_open")
 interface AuthenticationAPI
 {
@@ -312,7 +315,7 @@ interface CollectionAPI
 	Info
 	rename(string _oldName, string name);
 	
-	@path(":name")
+	@path(":name/rotate")
 	@method(HTTPMethod.PUT)
 	Result!bool
 	rotate(string _name);
