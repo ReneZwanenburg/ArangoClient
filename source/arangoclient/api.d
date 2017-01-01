@@ -221,6 +221,13 @@ interface CollectionAPI
 		{
 			mixin BasicInfoTemplate;
 		}
+		
+		struct Load
+		{
+			mixin InfoTemplate;
+			
+			ulong count;
+		}
 	}
 
 	
@@ -285,6 +292,31 @@ interface CollectionAPI
 	Result!(CollectionInfo[])
 	get();
 	
+	@path(":name/load")
+	@method(HTTPMethod.PUT)
+	Load
+	load(string _name);
+	
+	@path(":name/unload")
+	@method(HTTPMethod.PUT)
+	Info
+	unload(string _name);
+	
+	@path(":name/properties")
+	@method(HTTPMethod.PUT)
+	Properties
+	properties(string _name, bool waitForSync, ulong journalSize)
+	
+	@path(":oldName/rename")
+	@method(HTTPMethod.PUT)
+	Info
+	rename(string _oldName, string name);
+	
+	@path(":name")
+	@method(HTTPMethod.PUT)
+	Result!bool
+	rotate(string _name);
+	
 	private
 	{
 		mixin template BasicInfoTemplate()
@@ -340,6 +372,12 @@ mixin template Status()
 {
 	bool error;
 	ushort code;
+	
+	@optional
+	{
+		int errorNum;
+		string errorMessage;
+	}
 }
 
 struct Result(T)
