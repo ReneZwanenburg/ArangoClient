@@ -24,8 +24,13 @@ interface AuthenticationAPI
 @path("_api")
 interface API
 {
-	@property DatabaseAPI database();
-	@property CollectionAPI collection();
+	@property
+	{
+		DatabaseAPI database();
+		CollectionAPI collection();
+		DocumentAPI document();
+		SimpleAPI simple();
+	}
 }
 
 interface DatabaseAPI
@@ -369,6 +374,79 @@ interface CollectionAPI
 			string revision;
 		}
 	}
+}
+
+interface DocumentAPI
+{
+	@path(":collection/:id")
+	@method(HTTPMethod.GET)
+	Json
+	get(string _collection, string _id);
+	
+	T
+	get(T)(string _collection, string _id)
+	{
+		return get(_collection, _id).deserializeJson!T;
+	}
+	
+	@path(":collection/:id")
+	@method(HTTPMethod.GET)
+	@headerParam("rev", "If-Match")
+	Json
+	getRevision(string _collection, string _id, string rev);
+	
+	T
+	getRevision(T)(string _collection, string _id, string rev)
+	{
+		return getRevision(_collection, _id, rev).deserializeJson!T;
+	}
+	
+	@path(":collection/:id")
+	@method(HTTPMethod.GET)
+	@headerParam("rev", "If-None-Match")
+	Json
+	getNotRevision(string _collection, string _id, string rev);
+	
+	T
+	getNotRevision(T)(string _collection, string _id, string rev)
+	{
+		return getNotRevision(_collection, _id, rev).deserializeJson!T;
+	}
+	
+	//TODO: HEAD versions
+	
+	@path(":collection")
+	Json
+	add(string _collection, Json data);
+}
+
+interface SimpleAPI
+{
+	enum AllResultType
+	{
+		Id = "id",
+		Key = "key",
+		Path = "path"
+	}
+	
+	static
+	{
+		struct GetAllResult
+		{
+			mixin Status;
+			
+			string[] result;
+			bool hasMore;
+			bool cached;
+			
+			//TODO: extra field
+		}
+	}
+	
+	@path("all-keys")
+	@method(HTTPMethod.PUT)
+	AllResultType
+	all(AllResultType type, string collection);
 }
 
 mixin template Status()
