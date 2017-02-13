@@ -378,6 +378,16 @@ interface CollectionAPI
 
 interface DocumentAPI
 {
+	static
+	{
+		struct AddResult
+		{
+			string _id;
+			string _key;
+			string _rev;
+		}
+	}
+
 	@path(":collection/:id")
 	@method(HTTPMethod.GET)
 	Json
@@ -386,7 +396,7 @@ interface DocumentAPI
 	T
 	get(T)(string _collection, string _id)
 	{
-		return get(_collection, _id).deserializeJson!T;
+		return get(_collection, _id)["data"].deserializeJson!T;
 	}
 	
 	@path(":collection/:id")
@@ -416,8 +426,14 @@ interface DocumentAPI
 	//TODO: HEAD versions
 	
 	@path(":collection")
-	Json
-	add(string _collection, Json data);
+	AddResult
+	add(string _collection, string _key, Json data);
+
+	AddResult
+	add(T)(string _collection, string _key, T data)
+	{
+		return add(_collection, _key, data.serializeToJson);
+	}
 }
 
 interface SimpleAPI
