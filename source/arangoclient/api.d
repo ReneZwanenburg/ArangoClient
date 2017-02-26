@@ -30,6 +30,7 @@ interface API
 		CollectionAPI collection();
 		DocumentAPI document();
 		SimpleAPI simple();
+		CursorAPI cursor();
 	}
 }
 
@@ -473,6 +474,88 @@ interface SimpleAPI
 	@method(HTTPMethod.PUT)
 	AllResultType
 	all(AllResultType type, string collection);
+}
+
+interface CursorAPI
+{
+	static
+	{
+		struct CreateResult
+		{
+			mixin Status;
+
+			@optional
+			{
+				string status;
+				long count;
+				Json extra;
+			}
+
+			bool cached;
+			bool hasMore;
+			Json[] result;
+		}
+	}
+
+	public CreateResult create(string query, Json bindVars);
+
+	public CreateResult create(T)(string query, T bindVars)
+	{
+		return create(query, bindVars.serializeToJson);
+	}
+
+	@path(":id")
+	public CreateResult put(string _id);
+
+	@path(":id")
+	public void delete_(string _id);
+
+	public QueryResult!T query(T, V)(string query, V bindVars)
+	{
+		return QueryResult!T(resultSet);
+	}
+
+	private struct QueryResult(T)
+	{
+		private string id;
+		private CreateResult currentResultSet;
+
+		private this(CreateResult initialResultSet)
+		{
+			this.id = initialResultSet.id;
+			this.currentResultSet = initialResultSet;
+		}
+
+		~this()
+		{
+			delete_(id);
+		}
+
+		@disable this();
+		@disable this(this);
+
+		@property T front()
+		{
+			return deserializeJson(currentResultSet.result.front);
+		}
+
+		void popFront()
+		{
+			if(currentResultSet.result.empty)
+			{
+				currentResultSet = put(id);
+			}
+			else
+			{
+				currentResultSet.result.popFront();
+			}
+		}
+
+		@property bool empty()
+		{
+			return !currentResultSet.hasMore && currentResultSet.result.empty;
+		}
+	}
 }
 
 mixin template Status()
