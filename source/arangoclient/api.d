@@ -434,6 +434,16 @@ interface DocumentAPI
 	{
 		return add(_collection, _key, data.serializeToJson);
 	}
+	
+	@path(":collection")
+	AddResult
+	add(string _collection, string _key, string _from, string _to, Json data);
+
+	AddResult
+	add(T)(string _collection, string _key, string _from, string _to, T data)
+	{
+		return add(_collection, _key, data.serializeToJson);
+	}
 }
 
 interface SimpleAPI
