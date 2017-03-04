@@ -1,5 +1,8 @@
 module arangoclient.api;
 
+import std.array : empty, front, popFront;
+import std.typecons : RefCounted;
+
 import vibe.web.rest;
 import vibe.data.json;
 import vibe.http.common : HTTPMethod;
@@ -486,6 +489,7 @@ interface CursorAPI
 
 			@optional
 			{
+				string id;
 				string status;
 				long count;
 				Json extra;
@@ -504,58 +508,31 @@ interface CursorAPI
 		return create(query, bindVars.serializeToJson);
 	}
 
+	public T[] query(T, V)(string query, V bindVars)
+	{
+		import std.array : appender;
+		auto resultAppender = appender!(T[]);
+
+		auto resultSet = create!V(query, bindVars);
+		auto id = resultSet.id;
+		scope(exit) if(id.length) delete_(id);
+
+		foreach(element; resultSet.result) resultAppender ~= deserializeJson!T(element);
+
+		while(resultSet.hasMore)
+		{
+			resultSet = put(id);
+			foreach(element; resultSet.result) resultAppender ~= deserializeJson!T(element);
+		}
+		
+		return resultAppender.data;
+	}
+
 	@path(":id")
 	public CreateResult put(string _id);
 
 	@path(":id")
 	public void delete_(string _id);
-
-	public QueryResult!T query(T, V)(string query, V bindVars)
-	{
-		return QueryResult!T(resultSet);
-	}
-
-	private struct QueryResult(T)
-	{
-		private string id;
-		private CreateResult currentResultSet;
-
-		private this(CreateResult initialResultSet)
-		{
-			this.id = initialResultSet.id;
-			this.currentResultSet = initialResultSet;
-		}
-
-		~this()
-		{
-			delete_(id);
-		}
-
-		@disable this();
-		@disable this(this);
-
-		@property T front()
-		{
-			return deserializeJson(currentResultSet.result.front);
-		}
-
-		void popFront()
-		{
-			if(currentResultSet.result.empty)
-			{
-				currentResultSet = put(id);
-			}
-			else
-			{
-				currentResultSet.result.popFront();
-			}
-		}
-
-		@property bool empty()
-		{
-			return !currentResultSet.hasMore && currentResultSet.result.empty;
-		}
-	}
 }
 
 mixin template Status()
