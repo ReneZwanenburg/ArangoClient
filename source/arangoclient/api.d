@@ -400,7 +400,7 @@ interface DocumentAPI
 	T
 	get(T)(string _collection, string _id)
 	{
-		return get(_collection, _id)["data"].deserializeJson!T;
+		return get(_collection, _id).deserializeJson!T;
 	}
 	
 	@path(":collection/:id")
@@ -508,12 +508,31 @@ interface CursorAPI
 		return create(query, bindVars.serializeToJson);
 	}
 
-	public T[] query(T, V)(string query, V bindVars)
+	public final void query(string queryString)
+	{
+		static struct Params {}
+		query(queryString, Params.init);
+	}
+
+	public void query(V)(string queryString, V bindVars)
+	{
+		auto resultSet = create!V(queryString, bindVars);
+		auto id = resultSet.id;
+		if(id.length) delete_(id);
+	}
+	
+	public T[] query(T)(string queryString)
+	{
+		static struct Params {}
+		return query(queryString, Params.init);
+	}
+
+	public T[] query(T, V)(string queryString, V bindVars)
 	{
 		import std.array : appender;
 		auto resultAppender = appender!(T[]);
 
-		auto resultSet = create!V(query, bindVars);
+		auto resultSet = create!V(queryString, bindVars);
 		auto id = resultSet.id;
 		scope(exit) if(id.length) delete_(id);
 
