@@ -524,7 +524,7 @@ interface CursorAPI
 	public T[] query(T)(string queryString)
 	{
 		static struct Params {}
-		return query(queryString, Params.init);
+		return query!T(queryString, Params.init);
 	}
 
 	public T[] query(T, V)(string queryString, V bindVars)
